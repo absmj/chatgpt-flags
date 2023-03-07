@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Slideshow to Video</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        .slideshow {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            top: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+
+        .slide-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fade 5s ease-in-out;
+            animation-delay: 1s;
+            animation-fill-mode: forwards;
+            opacity: 0;
+        }
+
+        .slide:last-child {
+            animation-fill-mode: none;
+        }
+
+        .slide img {
+            min-width: 100%;
+            min-height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .desc {
+            font-family: Arial, Helvetica, sans-serif;
+            text-transform: uppercase;
+            position: absolute;
+            bottom: 1em;
+            font-size: 2em;
+            color: rgb(255, 255, 255);
+            text-shadow: .8px .8px .6px rgb(0, 0, 0);
+            opacity: 0;
+            animation: fade 3s ease-in;
+            animation-delay: .85s;
+        }
+
+        @keyframes fade {
+            0% {
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slideshow">
+        <div class="slide-container">
+            <div class="slide" v-for="(country, index) in countries" :key="index" @animationend="nextSlide"
+                :style="{'animation-delay': (index * 5) + 's'}">
+                <img :src="country.image_url" alt="flag" />
+                <p :style="{'animation-delay': ((index * 5) + 0.85) + 's'}" class="desc">{{country.name}}</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas/dist/html2canvas.min.js"></script>
+    <script>
+        const app = new Vue({
+            el: '.slideshow',
+            data: {
+                countries: [],
+                currentIndex: 0,
+            },
+
+            async mounted() {
+                await this.getFlags();
+            },
+
+            methods: {
+                async getFlags() {
+                    const request = await fetch('https://restcountries.com/v2/all');
+                    const countries = await request.json();
+                    this.countries = countries.map(country => {
+                        return {
+                            name: country.name,
+                            image_url: country.flags.svg,
+                            loaded: false
+                        };
+                    });
+                },
+
+                nextSlide() {
+                    this.currentIndex = (this.currentIndex + 1) % this.countries.length;
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
